@@ -54,14 +54,13 @@ func (r *Root) Run() (*DNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		r.work <- dn
-	}()
 
 	for i := 0; i < r.Threads; i++ {
 		r.wg.Add(1)
-		r.allWork()
+		go r.allWork()
 	}
+
+	r.work <- dn
 
 	r.wg.Wait()
 
@@ -79,7 +78,8 @@ func (r *Root) allWork() {
 			return
 		case dn = <-r.work:
 			dn.work(r.work, r.stop, &r.pending)
-			if atomic.AddInt32(&r.pending, -1) < 1 {
+			remaining := atomic.AddInt32(&r.pending, -1)
+			if remaining < 1 {
 				close(r.stop)
 				return
 			}

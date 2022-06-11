@@ -187,8 +187,8 @@ func TestWork(t *testing.T) {
 		r := NewRoot("/does/not/exist")
 		require.NotNil(r)
 		dn, err := r.Run()
-		assert.Error(err)
 		assert.Nil(dn)
+		require.Error(err)
 		assert.Contains(err.Error(), "no such file or directory")
 	})
 }
