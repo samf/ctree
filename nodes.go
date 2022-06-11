@@ -41,6 +41,27 @@ func (dn *DNode) TotalLength() int {
 	return l
 }
 
+// Flatten flattens the dnode tree into a slice of nodes
+func (dn *DNode) Flatten() []Node {
+	nodes := make(
+		[]Node,
+		1+len(dn.leaves),
+		1+len(dn.leaves)+len(dn.children),
+	)
+
+	nodes[0] = dn
+
+	for i := range dn.leaves {
+		nodes[i+1] = dn.leaves[i]
+	}
+
+	for _, child := range dn.children {
+		nodes = append(nodes, child.Flatten()...)
+	}
+
+	return nodes
+}
+
 // Leaf holds information on a leaf node
 type Leaf struct {
 	path string

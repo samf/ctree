@@ -191,4 +191,28 @@ func TestWork(t *testing.T) {
 		require.Error(err)
 		assert.Contains(err.Error(), "no such file or directory")
 	})
+
+	t.Run("Flatten() works", func(t *testing.T) {
+		require := require.New(t)
+		assert := assert.New(t)
+
+		dn, err := NewRoot(where).Run()
+		assert.NoError(err)
+		require.NotNil(dn)
+		assert.NoError(dn.Error())
+
+		flat := dn.Flatten()
+		assert.Equal(dn.TotalLength(), len(flat))
+		visitator(assert, dn, flat)
+	})
+}
+
+func visitator(assert *assert.Assertions, dn *DNode, flat []Node) {
+	assert.Contains(flat, dn)
+	for _, leaf := range dn.leaves {
+		assert.Contains(flat, leaf)
+	}
+	for _, child := range dn.children {
+		visitator(assert, child, flat)
+	}
 }
