@@ -205,6 +205,31 @@ func TestWork(t *testing.T) {
 		assert.Equal(dn.TotalLength(), len(flat))
 		visitator(assert, dn, flat)
 	})
+
+	t.Run("Errors() works", func(t *testing.T) {
+		require := require.New(t)
+		assert := assert.New(t)
+
+		where := t.TempDir()
+		ttree.build(t, where)
+
+		bad := path.Join(where, "home", "wsfitzpa")
+		err := os.Chmod(bad, 0)
+		require.NoError(err)
+		t.Cleanup(func() {
+			os.Chmod(bad, 0777)
+		})
+
+		dn, err := NewRoot(where).Run()
+		assert.NoError(err)
+		require.NotNil(dn)
+
+		errs := dn.Errors()
+		require.NotEmpty(errs)
+		assert.Equal(1, len(errs))
+		assert.Contains(errs[0].Error(), bad)
+		assert.Contains(errs[0].Error(), "permission")
+	})
 }
 
 func visitator(assert *assert.Assertions, dn *DNode, flat []Node) {

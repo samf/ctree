@@ -62,6 +62,21 @@ func (dn *DNode) Flatten() []Node {
 	return nodes
 }
 
+// Errors returns a slice of all of the errors contained in the DNode
+func (dn *DNode) Errors() []error {
+	errs := []error{}
+
+	if dn.err != nil {
+		errs = append(errs, dn.err)
+	}
+
+	for _, child := range dn.children {
+		errs = append(errs, child.Errors()...)
+	}
+
+	return errs
+}
+
 // Leaf holds information on a leaf node
 type Leaf struct {
 	path string
