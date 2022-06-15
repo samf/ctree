@@ -9,11 +9,14 @@ import (
 // DNode describes a directory, potentially an interior node on the graph
 type DNode struct {
 	path     string
+	parent   *DNode
 	info     *os.FileInfo
 	children []*DNode
 	leaves   []*Leaf
 	err      error
 }
+
+var _ Node = &DNode{}
 
 // Path returns the path of the directory node
 func (dn *DNode) Path() string {
@@ -79,9 +82,12 @@ func (dn *DNode) Errors() []error {
 
 // Leaf holds information on a leaf node
 type Leaf struct {
-	path string
-	info *os.FileInfo
+	path   string
+	parent *DNode
+	info   *os.FileInfo
 }
+
+var _ Node = &Leaf{}
 
 // Path returns the path of the leaf node
 func (l *Leaf) Path() string {
@@ -131,8 +137,10 @@ func (dn *DNode) work(work workStream, stop stopStream, pending *int32) {
 	for _, fi := range infos {
 		switch node := newNode(path.Join(dn.path, fi.Name()), &fi).(type) {
 		case *DNode:
+			node.parent = dn
 			dn.children = append(dn.children, node)
 		case *Leaf:
+			node.parent = dn
 			dn.leaves = append(dn.leaves, node)
 		}
 	}
