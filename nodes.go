@@ -8,6 +8,7 @@ import (
 
 // DNode describes a directory, potentially an interior node on the graph
 type DNode struct {
+	name     string
 	path     string
 	parent   *DNode
 	info     *os.FileInfo
@@ -82,6 +83,7 @@ func (dn *DNode) Errors() []error {
 
 // Leaf holds information on a leaf node
 type Leaf struct {
+	name   string
 	path   string
 	parent *DNode
 	info   *os.FileInfo
@@ -105,16 +107,19 @@ type Node interface {
 	Info() *os.FileInfo
 }
 
-func newNode(path string, fi *os.FileInfo) Node {
+func newNode(fullpath string, fi *os.FileInfo) Node {
+	name := path.Base(fullpath)
 	if (*fi).IsDir() {
 		return &DNode{
-			path: path,
+			path: fullpath,
+			name: name,
 			info: fi,
 		}
 	}
 
 	return &Leaf{
-		path: path,
+		path: fullpath,
+		name: name,
 		info: fi,
 	}
 }

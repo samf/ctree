@@ -230,6 +230,39 @@ func TestWork(t *testing.T) {
 		assert.Contains(errs[0].Error(), bad)
 		assert.Contains(errs[0].Error(), "permission")
 	})
+
+	t.Run("there are names", func(t *testing.T) {
+		require := require.New(t)
+		assert := assert.New(t)
+
+		var visitor func(t *testing.T, dn *DNode) map[string]struct{}
+		visitor = func(t *testing.T, dn *DNode) map[string]struct{} {
+			names := map[string]struct{}{
+				dn.name: {},
+			}
+
+			for _, leaf := range dn.leaves {
+				names[leaf.name] = struct{}{}
+			}
+
+			for _, child := range dn.children {
+				for name := range visitor(t, child) {
+					names[name] = struct{}{}
+				}
+			}
+
+			return names
+		}
+
+		r := NewRoot(where)
+		dn, err := r.Run()
+		assert.NoError(err)
+		require.NotNil(dn)
+
+		names := visitor(t, dn)
+		assert.Contains(names, ".cshrc")
+		assert.Contains(names, "wsfitzpa")
+	})
 }
 
 func visitator(assert *assert.Assertions, dn *DNode, flat []Node) {
